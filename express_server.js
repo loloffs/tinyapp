@@ -45,6 +45,26 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 
+
+
+
+// here
+app.post("/login", (req, res) => {
+  
+  // It should set a cookie named username to the value submitted
+  //  in the request body via the login form. After our server has 
+  //  set the cookie it should redirect the browser back to the /urls page.
+
+  res.cookie("username", req.body);
+
+  res.redirect("/urls");
+});
+
+
+
+
+
+
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
