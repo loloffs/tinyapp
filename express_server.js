@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -9,7 +10,7 @@ app.set("view engine", "ejs");
 
 
 
-function generateRandomString() {
+const generateRandomString = function () {
   return Math.random().toString(36).substr(2, 6);
 };
 
@@ -20,10 +21,12 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
@@ -42,6 +45,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   //delete templateVars.shortURL;
   delete urlDatabase[req.params.shortURL]
   res.redirect("/urls");
+});
+
+//here
+app.post("/urls/:id", (req, res) => {
+  // Edit
+  urlDatabase[req.params.id] = req.body.newURL;
+  res.redirect('/urls');
 });
 
 
