@@ -16,13 +16,6 @@ const generateRandomString = function () {
   return Math.random().toString(36).substr(2, 6);
 };
 
-
-
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
-
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "userRandomID" },
@@ -79,8 +72,6 @@ for (const id in users)
 };
 
 
-
-
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/urls");
@@ -91,16 +82,13 @@ app.get("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     return res.redirect("/login");
   }
-
   const userFromCookies = users[req.cookies["user_id"]];
   const urls = {};
-
   for (const shortUrl in urlDatabase) {
     if (urlDatabase[shortUrl].userID === userFromCookies.id) {
       urls[shortUrl] = urlDatabase[shortUrl];
     }
   }
-
   const templateVars = { urls: urls, user: userFromCookies }; 
   res.render("urls_index", templateVars);
 });
@@ -115,10 +103,10 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", {user});
 });
 
-//here
+
 app.post("/urls", (req, res) => {
   let short = generateRandomString();
-  const userString = res.cookies("user_id");
+  const userString = req.cookies.user_id;
   urlDatabase[short] = { longUrl: req.body.longURL, userID: userString };
   res.redirect(`/urls/${short}`);
 });
@@ -131,6 +119,16 @@ app.post("/urls/:id", (req, res) => {
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const loggedInUserID = req.cookies.user_id;
+  if (!loggedInUserID) {
+    return res.redirect("/login");
+  }
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.status(404).send("Error 404");
+  }
+  if (urlDatabase[req.params.shortURL.userID] !== loggedInUserID) {
+    return res.status(404).send("Error 404"); // kiss my ass hackers
+  }
   delete urlDatabase[req.params.shortURL]
   res.redirect("/urls");
 });
@@ -184,7 +182,17 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies["user_id"]]};
+  const loggedInUserID = req.cookies.user_id;
+  if (!loggedInUserID) {
+    return res.redirect("/login");
+  }
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.status(404).send("Error 404");
+  }
+  if (urlDatabase[req.params.shortURL.userID] !== loggedInUserID) {
+    return res.status(404).send("Error 404");
+  }
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
 });
 
