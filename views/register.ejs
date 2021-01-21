@@ -11,14 +11,14 @@
 <body>
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
-    <h3></h3>
+    <h3>Create Account</h3>
     <table class="table">
       <thead>
         <tr>
           <form method="post" action="/register">
-            <input type="email" name="email">
-            <input type="password" name="password">
-            Please sign in or register:
+            <input placeholder="email" type="email" name="email">
+            <input placeholder="password" type="password" name="password">
+            <!-- Please sign in or register: -->
             <button type="submit" class="btn btn-light">Register</button>
           </form>
         </tr>

@@ -25,21 +25,11 @@
         <% } else { %>
           <div class="nav-item">
           <form method="post" action="/login">
-              <input type="email" name="email">
-              <input type="password" name="password">
+              <input placeholder="email" type="email" name="email">
+              <input placeholder="password" type="password" name="password">
               <button type="submit" class="btn btn-light">Login</button>
           </form>
           </div>
-          <table class="table">
-            <thead>
-              <tr>
-                <form method="post" action="/login">
-                <th scope="col">Email:</th>
-                <input type="email" name="email">
-                <th scope="col">Password:</th>
-                <input type="password" name="password">
-                </form>
-              </tr>
               <% } %>
     </main>
       <!-- Bootstrap JS -->
