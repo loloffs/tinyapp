@@ -47,16 +47,19 @@ const isEmailTaken = function(email) {
 }
 
 
-const doesEmailMatchPassword = function(id, passwordAttempt) {
-  if (users[id].password === passwordAttempt) {
-    return true;
+const isPasswordCorrect = function(email, passwordAttempt) {  
+  for (const id in users) {
+    if (user[id].email === email) {
+      return user.password === passwordAttempt;
+    }
   }
-  return "Incorrect username or password";
+
+  return false;
 }  
 
 const doesUserEmailExist = (email) => {
-  for (const user in users) {
-    if(user.email === email) {
+  for (const id in users) {
+    if(users[id].email === email) {
       return true;
     }
   }
@@ -105,24 +108,10 @@ app.post("/login", (req, res) => {
 
   if (!doesUserEmailExist(req.body.email)) {
     return res.status(403).send("Email cannot be found");
-
-  } else if (!doesEmailMatchPassword(user_id, users.user_id.password)) {
+  } else if (!isPasswordCorrect(req.body.email, req.body.password)) {
     return res.status(403).send("Email and password do not match");
-  } 
-
-
-  if (doesEmailMatchPassword(user_id, users.user_id.password)) {
-    // "Login successful"
-    res.redirect("/urls");
-  } else if (!doesEmailMatchPassword(user_id, users.user_id.password)) {
-    // "Username or password is incorrect"
-    res.redirect("/login");
   }
-
-  console.log("req.body: ", req.body);
-  console.log("users: ", users);
   
-  // res.cookie("user_id", req.body.email);
 });
 
 //here
