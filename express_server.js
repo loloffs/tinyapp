@@ -49,11 +49,10 @@ const isEmailTaken = function(email) {
 
 const isPasswordCorrect = function(email, passwordAttempt) {  
   for (const id in users) {
-    if (user[id].email === email) {
-      return user.password === passwordAttempt;
+    if (users[id].email === email) {
+      return users[id].password === passwordAttempt;
     }
   }
-
   return false;
 }  
 
@@ -63,9 +62,19 @@ const doesUserEmailExist = (email) => {
       return true;
     }
   }
-
   return false;
 }
+
+const getIDByEmailPassword = function(email, password) {
+for (const id in users)
+  if (users[id].email === email && users[id].password === password) {
+    return id;
+  }
+};
+
+
+
+
 
 
 
@@ -105,13 +114,15 @@ app.post("/login", (req, res) => {
   // Modify the POST /login endpoint so that it uses the new email 
   // and password fields, and sets an appropriate user_id cookie on 
   // successful login. We'll no longer use the username cookie.
-
+  
   if (!doesUserEmailExist(req.body.email)) {
     return res.status(403).send("Email cannot be found");
   } else if (!isPasswordCorrect(req.body.email, req.body.password)) {
     return res.status(403).send("Email and password do not match");
-  }
+  } 
   
+  res.cookie("user_id", getIDByEmailPassword(req.body.email, req.body.password));
+  res.redirect("/urls");
 });
 
 //here
