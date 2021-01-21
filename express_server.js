@@ -111,10 +111,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 
 app.post("/login", (req, res) => {
-  // Modify the POST /login endpoint so that it uses the new email 
-  // and password fields, and sets an appropriate user_id cookie on 
-  // successful login. We'll no longer use the username cookie.
-  
   if (!doesUserEmailExist(req.body.email)) {
     return res.status(403).send("Email cannot be found");
   } else if (!isPasswordCorrect(req.body.email, req.body.password)) {
