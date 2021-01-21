@@ -2,16 +2,21 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
+
+const cookieSession = require('cookie-session');
 
 
 
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-app.use(cookieParser());
-
+// app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ["8327gd2d"]
+}));
 
 const generateRandomString = function () {
   return Math.random().toString(36).substr(2, 6);
@@ -56,13 +61,13 @@ const isPasswordCorrect = function(email, passwordAttempt) {
   return false;
 }  
 
-const doesUserEmailExist = (email) => {
+const getUserByEmail = (email) => {
   for (const id in users) {
     if(users[id].email === email) {
-      return true;
+      return users[id];
     }
   }
-  return false;
+  return null;
 }
 
 const getIDByEmailPassword = function(email, password) {
@@ -74,16 +79,16 @@ for (const id in users)
 
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  delete req.session.user_id;
   res.redirect("/urls");
 });
 
 
 app.get("/urls", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
     res.redirect("/login");
   }
-  const userFromCookies = users[req.cookies["user_id"]];
+  const userFromCookies = users[req.session.user_id];
   const urls = {};
   for (const shortUrl in urlDatabase) {
     if (urlDatabase[shortUrl].userID === userFromCookies.id) {
@@ -96,10 +101,10 @@ app.get("/urls", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     res.redirect("/login");
   }
-  userId = req.cookies.user_id;
+  userId = req.session.user_id;
   const user = users.userId;
   res.render("urls_new", {user});
 });
@@ -107,7 +112,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let short = generateRandomString();
-  const userString = req.cookies.user_id;
+  const userString = req.session.user_id;
   urlDatabase[short] = { longUrl: req.body.longURL, userID: userString };
   res.redirect(`/urls/${short}`);
 });
@@ -120,7 +125,7 @@ app.post("/urls/:id", (req, res) => {
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const loggedInUserID = req.cookies.user_id;
+  const loggedInUserID = req.session.user_id;
   if (!loggedInUserID) {
     res.redirect("/login");
   }
@@ -135,23 +140,25 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 
-
-
-
-// Login
-
 app.post("/login", (req, res) => {
-  if (!doesUserEmailExist(req.body.email)) {
-    return res.status(403).send("Email cannot be found");
-  } else if (!isPasswordCorrect(req.body.email, req.body.password)) {
-    return res.status(403).send("Email and password do not match");
-  }   
-  res.cookie("user_id", getIDByEmailPassword(req.body.email, req.body.password));
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
+    return res.status(403).send("Email or password cannot be blank");
+  }
+
+  const user = getUserByEmail(email);
+  if (!user) {
+    return res.status(403).send("User not found");
+  }
+
+  if (!bcrypt.compareSync(passwordAttempt, user.password)) {
+    return res.status(403).send("Incorrect password");
+  }
+
+  req.session.user_id = user.id;
   res.redirect("/urls",);
 });
-
-
-
 
 
 
@@ -171,35 +178,12 @@ app.get("/register", (req, res) => {
 });
 
 
-
-
-
-
-
-//Register
-
 app.post("/register", (req, res) => {
-
-
-
-  // const password = "purple-monkey-dinosaur"; // found in the req.params object
-
-
-  console.log("req.params: ", req.params);
-
-  const salt = bcrypt.genSaltSync(10); // What is this?
-
+  const salt = bcrypt.genSaltSync(10);
   const plainTextPassword = req.body.password;
-
-  const hashedPassword = bcrypt.hashSync(plainTextPassword, salt); // salt?
-  // Error: data and salt arguments required
-  // Hashed password is not a function 
-
-  // const hash = bcrypt.hashSync(myPlaintextPassword, saltRounds);// Store hash in your password DB.
-
-
-
+  const hashedPassword = bcrypt.hashSync(plainTextPassword, salt);
   let userID = generateRandomString();
+  
   if (req.body.email === '' || req.body.password === '') {
     return res.status(400).send("Email or password was blank");
   } else if (isEmailTaken(req.body.email)) {
@@ -207,17 +191,10 @@ app.post("/register", (req, res) => {
   } else {
       users[userID] = { id: userID, email: req.body.email, password: hashedPassword};
       console.log(users);
-      res.cookie("user_id", userID);
+      req.session.user_id = userID;
       res.redirect("/urls");
   }
 });
-
-
-
-
-
-
-
 
 
 app.get("/u/:shortURL", (req, res) => {
@@ -225,9 +202,8 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-
 app.get("/urls/:shortURL", (req, res) => {
-  const loggedInUserID = req.cookies.user_id;
+  const loggedInUserID = req.session.user_id;
   if (!loggedInUserID) {
     return res.redirect("/login");
   }
