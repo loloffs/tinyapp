@@ -36,26 +36,6 @@ const users = {
 };
 
 
-
-// const isPasswordCorrect = function(email, passwordAttempt) {
-//   for (const id in users) {
-//     if (users[id].email === email) {
-//       return bcrypt.compareSync(passwordAttempt, users[id].password);
-//     }
-//   }
-//   return false;
-// };
-
-
-
-// const getIDByEmailPassword = function(email, password) {
-//   for (const id in users)
-//     if (users[id].email === email && bcrypt.compareSync(password, users[id].password)) {
-//       return id;
-//     }
-// };
-
-
 app.post("/logout", (req, res) => {
   delete req.session.user_id;
   res.redirect("/urls");
@@ -83,15 +63,17 @@ app.get("/urls/new", (req, res) => {
     res.redirect("/login");
   }
   userId = req.session.user_id;
-  const user = users.userId;
-  res.render("urls_new", {user});
+  const templateVars = {
+    user: users[req.session.user_id]
+  };
+  res.render("urls_new", templateVars);
 });
 
 
 app.post("/urls", (req, res) => {
   let short = generateRandomString();
   const userString = req.session.user_id;
-  urlDatabase[short] = { longUrl: req.body.longURL, userID: userString };
+  urlDatabase[short] = { longURL: req.body.longURL, userID: userString };
   res.redirect(`/urls/${short}`);
 });
 
@@ -183,21 +165,20 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
 
-  console.log("HERE: ", req.params.shortURL);
-
   const loggedInUserID = req.session.user_id;
   if (!loggedInUserID) {
     return res.redirect("/login");
   }
+
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(404).send("Error 404");
   }
-  if (urlDatabase[req.params.shortURL[userID]] !== loggedInUserID) {
-    console.log("HERE 2: ", req.params.shortURL[userID]);
+
+  if (urlDatabase[req.params.shortURL].userID !== loggedInUserID) {
     return res.status(404).send("Error 404");
   }
-  console.log("HERE 3: ", req.params.shortURL.userID);
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies["user_id"]]};
+
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[loggedInUserID]};
   res.render("urls_show", templateVars);
 });
 
@@ -219,4 +200,8 @@ app.get("/hello", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
+});
+
+app.get("*", (req, res) => {
+  res.redirect("/login");
 });
