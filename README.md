@@ -21,7 +21,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 #### My URLs Page
 
-!["My URLs page"](https://github.com/loloffs/tinyapp/blob/master/docs/edit-page.png?raw=true)
+!["My URLs page"](https://github.com/loloffs/tinyapp/blob/master/docs/myURLs-page.png?raw=true)
 
 
 
