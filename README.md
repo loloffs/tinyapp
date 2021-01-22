@@ -13,6 +13,12 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["Login page"](https://github.com/loloffs/tinyapp/blob/master/docs/login-page.png?raw=true)
 
+
+#### Edit Page
+
+!["Edit page"](https://github.com/loloffs/tinyapp/blob/master/docs/edit-page.png?raw=true)
+
+
 ## Dependencies
 
 - Node.js
