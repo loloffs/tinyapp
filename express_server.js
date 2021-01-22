@@ -46,6 +46,7 @@ app.get("/urls", (req, res) => {
   if (!req.session.user_id) {
     res.redirect("/login");
   }
+
   const userFromCookies = users[req.session.user_id];
   const urls = {};
   for (const shortUrl in urlDatabase) {
@@ -62,6 +63,7 @@ app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
     res.redirect("/login");
   }
+
   userId = req.session.user_id;
   const templateVars = {
     user: users[req.session.user_id]
@@ -89,12 +91,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (!loggedInUserID) {
     res.redirect("/login");
   }
+
   if (!urlDatabase[req.params.shortURL]) {
     res.status(404).send("Error 404");
   }
+
   if (urlDatabase[req.params.shortURL.userID] !== loggedInUserID) {
     res.status(404).send("Error 404");
   }
+
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
@@ -159,7 +164,7 @@ app.post("/register", (req, res) => {
 
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
