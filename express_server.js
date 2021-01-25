@@ -80,11 +80,7 @@ app.post("/urls", (req, res) => {
 });
 
 
-app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.newURL;
-  res.redirect('/urls');
-});
-
+// Delete button
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const loggedInUserID = req.session.user_id;
@@ -96,7 +92,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.status(404).send("Error 404");
   }
 
-  if (urlDatabase[req.params.shortURL.userID] !== loggedInUserID) {
+  if (urlDatabase[req.params.shortURL].userID !== loggedInUserID) {
     res.status(404).send("Error 404");
   }
 
@@ -104,6 +100,30 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+// Edit button
+
+app.post("/urls/:id", (req, res) => {
+  const loggedInUserID = req.session.user_id;
+  
+  if (!loggedInUserID) {
+    res.redirect("/login");
+  }
+
+  if (!urlDatabase[req.params.id]) {
+    res.status(404).send("Error 404");
+  }
+
+  if (urlDatabase[req.params.id].userID !== loggedInUserID) {
+    res.status(404).send("Error 404");
+  }
+
+  urlDatabase[req.params.id].longURL = req.body.newURL;
+  return res.redirect('/urls');
+});
+
+
+
+// Login button
 
 app.post("/login", (req, res) => {
   const email = req.body.email;
@@ -127,6 +147,8 @@ app.post("/login", (req, res) => {
 
 
 
+// Login page
+
 app.get("/login", (req, res) => {
   const templateVars = {
     user: null
@@ -135,6 +157,9 @@ app.get("/login", (req, res) => {
 });
 
 
+
+// Sign up page
+
 app.get("/register", (req, res) => {
   const templateVars = {
     user: null
@@ -142,6 +167,9 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+
+
+// Create account post request 
 
 app.post("/register", (req, res) => {
   const salt = bcrypt.genSaltSync(10);
@@ -188,8 +216,13 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 
+
+
+// if user goes to http://localhost:8080/, redirect to register page
+
 app.get("/", (req, res) => {
-  res.send("Hello!");
+
+  res.redirect("/register");
 });
 
 
@@ -206,6 +239,10 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
+
+// "Catch all" that redirects to login page
 
 app.get("*", (req, res) => {
   res.redirect("/login");

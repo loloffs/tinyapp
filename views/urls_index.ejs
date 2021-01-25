@@ -17,7 +17,7 @@
         <tr>
           <th scope="col">Short URL</th>
           <th scope="col">Long URL</th>
-          <!-- <th scope="col">Edit</th> -->
+          <th scope="col">Edit</th>
           <th scope="col">Delete</th>
         </tr>
       </thead>
@@ -27,9 +27,16 @@
             <td><%= url %></td>
             <td><%= urls[url].longURL %></td>
             <td>
-              <form method="post" action="/urls/<%=url%>/delete">
-                <input type="submit" value="Delete" class="btn btn-danger" />
+
+              <form method="get" action="urls/<%=url%>"> <!-- want this to redirect to edit p -->
+                <input type="submit" value="Edit" class="btn btn-info" />
               </form>
+
+            <div style = "position:relative; left:100px; top:-35px;">
+              <form method="post" style="float: right" action="/urls/<%=url%>/delete">
+                <input type="submit" value="Delete" class="btn btn-danger"/>
+              </form>
+            </div>
             </td>
           </tr>
         <% } %>
